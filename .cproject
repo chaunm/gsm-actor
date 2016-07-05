@@ -26,11 +26,11 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1857933887" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.paths.972602756" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/universal}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/SerialCommunication}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/actor}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/Queue}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/GsmModem}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/universal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/SerialCommunication}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/actor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/Queue}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/GsmModem}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1056869815" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="PC_RUNNING"/>
@@ -50,7 +50,7 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="jansson"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="pthread"/>
 								</option>
-								<option id="gnu.c.link.option.paths.1936893617" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths"/>
+								<option id="gnu.c.link.option.paths.1936893617" name="Library search path (-L)" superClass="gnu.c.link.option.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.101742426" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -93,15 +93,15 @@
 									<listOptionValue builtIn="false" value="PI_RUNNING"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.177878837" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/jansson}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/lib-mosquitto}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/uuid/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/universal}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/SerialCommunication}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/actor}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/Queue}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/GsmModem}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/wiringPi}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/jansson}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/lib-mosquitto}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/uuid/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/universal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/SerialCommunication}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/actor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/Queue}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/GsmModem}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/wiringPi}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.files.1680479873" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/universal/typesdef.h}&quot;"/>
@@ -122,12 +122,12 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="pthread"/>
 								</option>
 								<option id="gnu.c.link.option.paths.831124406" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/jansson}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/lib-mosquitto}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/uuid/lib}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Gsm/src/lib/wiringPi}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/jansson}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/lib-mosquitto}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/uuid/lib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/lib/wiringPi}&quot;"/>
 								</option>
-								<option id="gnu.c.link.option.ldflags.1254047908" name="Linker flags" superClass="gnu.c.link.option.ldflags" value="-Wl,-rpath=/home/chaunm/Working/ZigbeeHost/Gsm/src/lib/lib-ssl" valueType="string"/>
+								<option id="gnu.c.link.option.ldflags.1254047908" name="Linker flags" superClass="gnu.c.link.option.ldflags" value="-Wl,-rpath=${workspace_loc:/${ProjName}/src/lib/lib-ssl}" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1437729805" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -157,10 +157,13 @@
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.2095555339;cdt.managedbuild.config.gnu.cross.exe.debug.2095555339.;cdt.managedbuild.tool.gnu.c.compiler.base.1857933887;cdt.managedbuild.tool.gnu.c.compiler.input.1161932238">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.2095555339.1323920764;cdt.managedbuild.config.gnu.cross.exe.debug.2095555339.1323920764.;cdt.managedbuild.tool.gnu.cross.c.compiler.595773114;cdt.managedbuild.tool.gnu.c.compiler.input.1567445675">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.2095555339;cdt.managedbuild.config.gnu.cross.exe.debug.2095555339.;cdt.managedbuild.tool.gnu.cross.c.compiler.620755961;cdt.managedbuild.tool.gnu.c.compiler.input.1267068667">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.2095555339;cdt.managedbuild.config.gnu.cross.exe.debug.2095555339.;cdt.managedbuild.tool.gnu.c.compiler.base.1857933887;cdt.managedbuild.tool.gnu.c.compiler.input.1161932238">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
