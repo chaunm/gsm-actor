@@ -165,7 +165,7 @@ void GsmActorPublishSignalStrength(BYTE signalStrength)
 	json_object_set(paramsJson, "report", reportJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/billing_report");
+	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/rssi_report");
 	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
 	free(signalReport);
 	json_decref(reportJson);
