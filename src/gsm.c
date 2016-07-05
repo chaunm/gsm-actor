@@ -1,0 +1,94 @@
+/*
+ ============================================================================
+ Name        : ZigbeeHost.c
+ Author      : ChauNM
+ Version     :
+ Copyright   :
+ Description : C Ansi-style
+ ============================================================================
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include "serialcommunication.h"
+#include "universal.h"
+#include "GsmModem.h"
+#include "GsmActor.h"
+
+void PrintHelpMenu() {
+	printf("program: ZigbeeHostAMA\n"
+			"using ./ZigbeeHostAMA --port [] --id [] --token []\n"
+			"--port: Serial port used to communicate with ZNP device (ex.: ttyUSB0, ttyAMA0..)\n"
+			"--id: guid of the znp actor\n"
+			"--token: pasword to the broker of the znp actor, this option can be omitted\n"
+			"--update: time for updating online message to system");
+}
+
+int main(int argc, char* argv[])
+{
+	PGSMACTOROPTION gsmActorOpt = malloc(sizeof(GSMACTOROPTION));
+	/* get option */
+	int opt = 0;
+	char *token = NULL;
+	char *guid = NULL;
+	char *SerialPort = NULL;
+	WORD ttl = 0;
+
+	// specific the expected option
+	static struct option long_options[] = {
+			{"id",      required_argument, 0, 'i' },
+			{"token", 	required_argument, 0, 't' },
+			{"port",    required_argument, 0, 'p' },
+			{"update", 	required_argument, 0, 'u' }
+	};
+	int long_index;
+	/* Process option */
+	while ((opt = getopt_long(argc, argv,":hi:t:p:",
+			long_options, &long_index )) != -1) {
+		switch (opt) {
+		case 'h' :
+			PrintHelpMenu();
+			return EXIT_SUCCESS;
+			break;
+		case 'p' :
+			SerialPort = StrDup(optarg);
+			break;
+		case 'i':
+			guid = StrDup(optarg);
+			break;
+		case 't':
+			token = StrDup(optarg);
+			break;
+		case 'u':
+			ttl = atoi(optarg);
+			break;
+		case ':':
+			if ((optopt == 'i') || optopt == 'p')
+			{
+				printf("invalid option(s), using -h for help\n");
+				return EXIT_FAILURE;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	if ((SerialPort == NULL) || (guid == NULL))
+	{
+		printf("invalid options, using -h for help\n");
+		return EXIT_FAILURE;
+	}
+	/* All option valid, start program */
+
+	puts("Program start");
+	/* start actor */
+	gsmActorOpt->guid = guid;
+	gsmActorOpt->psw = token;
+	GsmActorStart(gsmActorOpt);
+	// GsmModem
+	if (GsmModemInit(SerialPort, ttl) == FALSE)
+		exit(0);
+	GsmModemDeInit();
+	return EXIT_SUCCESS;
+}
