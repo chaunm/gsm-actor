@@ -370,9 +370,9 @@ static void GsmActorOnRequestMakeCall(PVOID pParam)
 	free(responseTopic);
 }
 
-static void GsmActorCreate(char* guid, char* psw)
+static void GsmActorCreate(char* guid, char* psw, char* host, WORD port)
 {
-	pGsmActor = ActorCreate(guid, psw);
+	pGsmActor = ActorCreate(guid, psw, host, port);
 	//Register callback to handle request package
 	if (pGsmActor == NULL)
 	{
@@ -386,7 +386,7 @@ static void GsmActorCreate(char* guid, char* psw)
 static void ZnpActorProcess(PGSMACTOROPTION option)
 {
 	mosquitto_lib_init();
-	GsmActorCreate(option->guid, option->psw);
+	GsmActorCreate(option->guid, option->psw, option->host, option->port);
 	if (pGsmActor == NULL)
 	{
 		mosquitto_lib_cleanup();

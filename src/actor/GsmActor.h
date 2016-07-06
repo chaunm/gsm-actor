@@ -12,6 +12,8 @@
 typedef struct tagGSMACTOROPTION {
 	char* guid;
 	char* psw;
+	char* host;
+	WORD port;
 }GSMACTOROPTION, *PGSMACTOROPTION;
 
 void GsmActorPublishSmsReceivedEvent(char* from, char* message);
