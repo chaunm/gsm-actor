@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 	};
 	int long_index;
 	/* Process option */
-	while ((opt = getopt_long(argc, argv,":hi:t:p:",
+	while ((opt = getopt_long(argc, argv,":hi:t:s:u:H:p:",
 			long_options, &long_index )) != -1) {
 		switch (opt) {
 		case 'h' :
