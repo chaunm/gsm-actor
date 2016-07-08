@@ -22,6 +22,11 @@ void ActorOnOffline(struct mosquitto* client, void * context, int cause);
 void ActorOnConnect(struct mosquitto* client, void* context, int result);
 void ActorOnDelivered(struct mosquitto* client, void* context, int dt);
 
+static void ActorOnRequestStop(PVOID pParam)
+{
+	sleep(2);
+	exit(EXIT_SUCCESS);
+}
 
 char* ActorMakeGuid(char* prefix)
 {
@@ -153,6 +158,7 @@ PACTOR ActorCreate(char* guid, char* psw, char* host, WORD port)
 	pActor->pActorCallback = NULL;
 	if (pActor->client != NULL)
 	{
+		ActorRegisterCallback(pActor, ":request/stop", ActorOnRequestStop, CALLBACK_RETAIN);
 		return pActor;
 	}
 	else

@@ -140,12 +140,6 @@ VOID GsmModemProcessIncoming(void* pParam, char* message)
 
 BOOL GsmModemCheckCarrierRegister()
 {
-	static WORD nCount = CHECK_CARRIER_PERIOD - 1;
-	nCount++;
-	if (nCount == 10 * CHECK_CARRIER_PERIOD)
-		nCount = 0;
-	if ((nCount % CHECK_CARRIER_PERIOD) != 0)
-		return COMMAND_SUCCESS;
 	char* currentCarrier = NULL;
 	BYTE index;
 	BYTE carrierStart = 0;
@@ -179,14 +173,14 @@ BOOL GsmModemCheckCarrierRegister()
 				free(gsmModem->carrier);
 				gsmModem->carrier = StrDup(currentCarrier);
 				// publish
-				GsmActorPublishGsmCarrier(currentCarrier);
+				//GsmActorPublishGsmCarrier(currentCarrier);
 			}
 		}
 		else
 		{
 			gsmModem->carrier = StrDup(currentCarrier);
 			// publish
-			GsmActorPublishGsmCarrier(currentCarrier);
+			//GsmActorPublishGsmCarrier(currentCarrier);
 		}
 		free(currentCarrier);
 		return TRUE;
@@ -285,15 +279,8 @@ BYTE GsmModemCheckBilling()
 
 BYTE GsmModemCheckRssi()
 {
-	static WORD nCount = CHECK_RSSI_PERIOD - 1;
-	BYTE result;
 	BYTE signalStrength;
-	BYTE oldSignal = gsmModem->signalStrength;
-	nCount++;
-	if (nCount == (10 * CHECK_RSSI_PERIOD))
-		nCount = 0;
-	if ((nCount % CHECK_RSSI_PERIOD) != 0)
-		return COMMAND_SUCCESS;
+	BYTE result;
 	char* signal = malloc(3);
 	memset(signal, 0, 3);
 	result = GsmModemExecuteCommand("AT+CSQ");
@@ -313,20 +300,46 @@ BYTE GsmModemCheckRssi()
 				gsmModem->signalStrength = SIGNAL_GOOD;
 			else
 				gsmModem->signalStrength = SIGNAL_EXCELLENT;
-
 		}
 	}
-	if (oldSignal != gsmModem->signalStrength)
-		GsmActorPublishSignalStrength(gsmModem->signalStrength);
 	return result;
+}
+
+VOID GsmReportCarrier()
+{
+	char* oldCarrier = StrDup(gsmModem->carrier);
+	BYTE oldsignalStrength = gsmModem->signalStrength;
+	static WORD nCount = CHECK_CARRIER_PERIOD - 1;
+	nCount++;
+	if (nCount == 10 * CHECK_CARRIER_PERIOD)
+		nCount = 0;
+	if ((nCount % CHECK_CARRIER_PERIOD) != 0)
+		return;
+	if (GsmModemCheckCarrierRegister() == FALSE)
+	{
+		GsmActorPublishGsmCarrier("no carrier", NO_SIGNAL);
+		return;
+	}
+	if (GsmModemCheckRssi() != COMMAND_SUCCESS)
+	{
+		GsmActorPublishGsmCarrier("no carrier", NO_SIGNAL);
+		return;
+	}
+	if (oldCarrier != NULL)
+	{
+		if ((strcmp(gsmModem->carrier, oldCarrier) != 0) || (oldsignalStrength != gsmModem->signalStrength))
+			GsmActorPublishGsmCarrier(gsmModem->carrier, gsmModem->signalStrength);
+	}
+	else
+		GsmActorPublishGsmCarrier(gsmModem->carrier, gsmModem->signalStrength);
+
 }
 
 VOID GsmModemProcessLoop()
 {
 	while(1)
 	{
-		GsmModemCheckCarrierRegister();
-		GsmModemCheckRssi();
+		GsmReportCarrier();
 		GsmModemCheckBilling();
 		sleep(1);
 	}

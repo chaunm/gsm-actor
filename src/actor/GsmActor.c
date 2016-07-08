@@ -114,20 +114,47 @@ void GsmActorPublishGsmBillingReport(char* report)
 	free(eventMessage);
 }
 
-void GsmActorPublishGsmCarrier(char* carrier)
+void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength)
 {
 	if (pGsmActor == NULL) return;
 	json_t* eventJson = json_object();
 	json_t* paramsJson = json_object();
 	json_t* carrierJson = json_string(carrier);
+	char* signalReport = malloc(50);
+	memset(signalReport, 0, 50);
+	switch(signalStrength)
+	{
+	case NO_SIGNAL:
+		signalReport = StrDup("status.no_signal");
+		break;
+	case SIGNAL_POOR:
+		signalReport = StrDup("status.poor");
+		break;
+	case SIGNAL_FAIR:
+		signalReport = StrDup("status.fair");
+		break;
+	case SIGNAL_GOOD:
+		signalReport = StrDup("status.good");
+		break;
+	case SIGNAL_EXCELLENT:
+		signalReport = StrDup("status.excellent");
+		break;
+	default:
+		signalReport = StrDup("status.unknown");
+		break;
+	}
+	json_t* rssiJson = json_string(signalReport);
 	json_object_set(paramsJson, "carrier", carrierJson);
+	json_object_set(paramsJson, "rssi", rssiJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
 	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/carrier_report");
 	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
 	json_decref(carrierJson);
+	json_decref(rssiJson);
 	json_decref(paramsJson);
 	json_decref(eventJson);
+	free(signalReport);
 	free(topicName);
 	free(eventMessage);
 }
@@ -383,7 +410,7 @@ static void GsmActorCreate(char* guid, char* psw, char* host, WORD port)
 	ActorRegisterCallback(pGsmActor, ":request/make_call", GsmActorOnRequestMakeCall, CALLBACK_RETAIN);
 }
 
-static void ZnpActorProcess(PGSMACTOROPTION option)
+static void ZnpActorProcess(PACTOROPTION option)
 {
 	mosquitto_lib_init();
 	GsmActorCreate(option->guid, option->psw, option->host, option->port);
@@ -403,7 +430,7 @@ static void ZnpActorProcess(PGSMACTOROPTION option)
 	mosquitto_lib_cleanup();
 }
 
-void GsmActorStart(PGSMACTOROPTION option)
+void GsmActorStart(PACTOROPTION option)
 {
 	pthread_create(&gsmActorThread, NULL, (void*)&ZnpActorProcess, (void*)option);
 	pthread_detach(gsmActorThread);

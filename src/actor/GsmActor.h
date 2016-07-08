@@ -8,21 +8,15 @@
 #ifndef GSMACTOR_H_
 #define GSMACTOR_H_
 
-#pragma pack(1)
-typedef struct tagGSMACTOROPTION {
-	char* guid;
-	char* psw;
-	char* host;
-	WORD port;
-}GSMACTOROPTION, *PGSMACTOROPTION;
+#include "actor.h"
 
 void GsmActorPublishSmsReceivedEvent(char* from, char* message);
 void GsmActorPublishCallReceivedEvent(char* from);
 void GsmActorPublishGsmStartedEvent(char* result);
 void GsmActorPublishGsmErrorEvent(char* error);
 void GsmActorPublishGsmBillingReport(char* report);
-void GsmActorPublishGsmCarrier(char* carrier);
+void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength);
 void GsmActorPublishSignalStrength(BYTE signalStrength);
-void GsmActorStart(PGSMACTOROPTION option);
+void GsmActorStart(PACTOROPTION option);
 
 #endif /* GSMACTOR_H_ */

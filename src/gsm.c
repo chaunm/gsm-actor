@@ -29,7 +29,7 @@ void PrintHelpMenu() {
 
 int main(int argc, char* argv[])
 {
-	PGSMACTOROPTION gsmActorOpt = malloc(sizeof(GSMACTOROPTION));
+	PACTOROPTION gsmActorOpt = malloc(sizeof(ACTOROPTION));
 	/* get option */
 	int opt = 0;
 	char *token = NULL;
