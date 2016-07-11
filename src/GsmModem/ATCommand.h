@@ -18,4 +18,5 @@ VOID atRegisterIncommingProc(void (*function)(void* pParam, char* message), void
 VOID atHandleClipEvent(char* message);
 VOID atHandleCmtEvent(char* message);
 VOID atHandleCusdEvent(char *message);
+char* atHandleCnumEvent(char* message);
 #endif /* ATCOMMAND_H_ */

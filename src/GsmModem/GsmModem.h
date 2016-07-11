@@ -38,9 +38,11 @@ typedef struct tagGSMDEVICE {
 	PSERIAL serialPort;
 	BYTE 	status;
 	BYTE 	signalStrength;
+	BYTE 	powerMode;
 	char* 	waitingCommand;
 	char* 	commandStatus;
 	char* 	carrier;
+	char* 	phoneNumber;
 } GSMMODEM, *PGSMMODEM;
 
 BYTE GsmModemSendSms(const char* number, const char* message);

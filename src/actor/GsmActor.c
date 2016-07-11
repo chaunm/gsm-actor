@@ -114,12 +114,17 @@ void GsmActorPublishGsmBillingReport(char* report)
 	free(eventMessage);
 }
 
-void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength)
+void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength, char* number)
 {
 	if (pGsmActor == NULL) return;
 	json_t* eventJson = json_object();
 	json_t* paramsJson = json_object();
 	json_t* carrierJson = json_string(carrier);
+	json_t* numberJson;
+	if (number != NULL)
+		numberJson = json_string(number);
+	else
+		numberJson = json_string("can_not_get_number");
 	char* signalReport = malloc(50);
 	memset(signalReport, 0, 50);
 	switch(signalStrength)
@@ -145,12 +150,14 @@ void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength)
 	}
 	json_t* rssiJson = json_string(signalReport);
 	json_object_set(paramsJson, "carrier", carrierJson);
+	json_object_set(paramsJson, "number", numberJson);
 	json_object_set(paramsJson, "rssi", rssiJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
 	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/carrier_report");
 	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
 	json_decref(carrierJson);
+	json_decref(numberJson);
 	json_decref(rssiJson);
 	json_decref(paramsJson);
 	json_decref(eventJson);
@@ -196,6 +203,28 @@ void GsmActorPublishSignalStrength(BYTE signalStrength)
 	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
 	free(signalReport);
 	json_decref(reportJson);
+	json_decref(paramsJson);
+	json_decref(eventJson);
+	free(topicName);
+	free(eventMessage);
+}
+
+void GsmActorPublishPhoneNumber(char* number)
+{
+	if (pGsmActor == NULL) return;
+	json_t* eventJson = json_object();
+	json_t* paramsJson = json_object();
+	json_t* numberJson;
+	if (number != NULL)
+		numberJson = json_string(number);
+	else
+		numberJson = json_string("can_not_get_number");
+	json_object_set(paramsJson, "number", numberJson);
+	json_object_set(eventJson, "params", paramsJson);
+	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
+	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/number_report");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	json_decref(numberJson);
 	json_decref(paramsJson);
 	json_decref(eventJson);
 	free(topicName);

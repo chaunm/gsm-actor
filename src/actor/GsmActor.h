@@ -15,8 +15,9 @@ void GsmActorPublishCallReceivedEvent(char* from);
 void GsmActorPublishGsmStartedEvent(char* result);
 void GsmActorPublishGsmErrorEvent(char* error);
 void GsmActorPublishGsmBillingReport(char* report);
-void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength);
+void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength, char* number);
 void GsmActorPublishSignalStrength(BYTE signalStrength);
+void GsmActorPublishPhoneNumber(char* number);
 void GsmActorStart(PACTOROPTION option);
 
 #endif /* GSMACTOR_H_ */

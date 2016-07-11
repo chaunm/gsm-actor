@@ -210,3 +210,30 @@ VOID atHandleCusdEvent(char *message)
 		GsmActorPublishGsmBillingReport(report);
 	free(report);
 }
+
+char* atHandleCnumEvent(char* message)
+{
+	BYTE index;
+	BYTE markCount = 0;
+	BYTE phoneStart = 0;
+	if ((message == NULL) || (strstr(message, "+CNUM: ") == 0))
+		return NULL;
+	char* phoneNumber = malloc(20);
+	memset(phoneNumber, 0, 20);
+	for (index = 0; index < strlen(message); index++)
+	{
+		if ((phoneStart > 0) && (message[index] != '"'))
+		{
+			phoneNumber[index - phoneStart] = message[index];
+		}
+		if (message[index] == '"')
+		{
+			markCount++;
+			if (markCount == 4)
+				break;
+		}
+		if ((markCount == 3) && (phoneStart == 0))
+			phoneStart = index + 1;
+	}
+	return phoneNumber;
+}

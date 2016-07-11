@@ -52,6 +52,11 @@ VOID GsmModemSetCmdStatus(char* commandStatus)
 BYTE GsmModemExecuteCommand(char* command)
 {
 	WORD timeout;
+	while(gsmModem->status != GSM_MODEM_ACTIVE)
+	{
+		sleep(1);
+	}
+	GsmModemSetCmdStatus(NULL);
 	atSendCommand(command, gsmModem->serialPort);
 	GsmModemSetStatus(GSM_MODEM_WAITING, command);
 	timeout = 0;
@@ -196,6 +201,24 @@ BOOL GsmModemCheckCarrierRegister()
 	}
 }
 
+BYTE GsmModemCheckBilling()
+{
+	//static LONG nCount = CHECK_BILLING_PERIOD - 1;
+	//nCount++;
+	//if (nCount == (10 * CHECK_BILLING_PERIOD))
+		//nCount = 0;
+	//if ((nCount % CHECK_BILLING_PERIOD) != 0)
+		//return COMMAND_SUCCESS;
+	BYTE result;
+	char* command = malloc(50);
+	memset(command, 50, 0);
+	strcpy(command, "ATD");
+	strcat(command, "*101#;");
+	result = GsmModemExecuteCommand(command);
+	free(command);
+	return result;
+}
+
 BYTE GsmModemSendSms(const char* number, const char* message)
 {
 	if ((gsmModem == NULL) || (message == NULL) ||(number == NULL)) return COMMAND_SUCCESS;
@@ -241,6 +264,7 @@ BYTE GsmModemSendSms(const char* number, const char* message)
 		return COMMAND_ERROR;
 	}
 	free(eventMessage);
+	GsmModemCheckBilling();
 	return COMMAND_SUCCESS;
 }
 
@@ -256,24 +280,7 @@ BYTE GsmModemMakeCall(const char* number)
 	strcat(command, ";");
 	result = GsmModemExecuteCommand(command);
 	free(command);
-	return result;
-}
-
-BYTE GsmModemCheckBilling()
-{
-	static LONG nCount = CHECK_BILLING_PERIOD - 1;
-	nCount++;
-	if (nCount == (10 * CHECK_BILLING_PERIOD))
-		nCount = 0;
-	if ((nCount % CHECK_BILLING_PERIOD) != 0)
-		return COMMAND_SUCCESS;
-	BYTE result;
-	char* command = malloc(50);
-	memset(command, 50, 0);
-	strcpy(command, "ATD");
-	strcat(command, "*101#;");
-	result = GsmModemExecuteCommand(command);
-	free(command);
+	GsmModemCheckBilling();
 	return result;
 }
 
@@ -302,7 +309,20 @@ BYTE GsmModemCheckRssi()
 				gsmModem->signalStrength = SIGNAL_EXCELLENT;
 		}
 	}
+	free(signal);
 	return result;
+}
+
+BOOL GsmGetPhoneNumber()
+{
+	if (GsmModemExecuteCommand("AT+CNUM") == COMMAND_SUCCESS)
+	{
+		if (gsmModem->phoneNumber != NULL)
+			free(gsmModem->phoneNumber);
+		gsmModem->phoneNumber = atHandleCnumEvent(gsmModem->commandStatus);
+		GsmActorPublishPhoneNumber(gsmModem->phoneNumber);
+	}
+	return FALSE;
 }
 
 VOID GsmReportCarrier()
@@ -317,21 +337,27 @@ VOID GsmReportCarrier()
 		return;
 	if (GsmModemCheckCarrierRegister() == FALSE)
 	{
-		GsmActorPublishGsmCarrier("no carrier", NO_SIGNAL);
+		GsmActorPublishGsmCarrier("no carrier", NO_SIGNAL, gsmModem->phoneNumber);
+		if (oldCarrier != NULL)
+			free(oldCarrier);
 		return;
 	}
 	if (GsmModemCheckRssi() != COMMAND_SUCCESS)
 	{
-		GsmActorPublishGsmCarrier("no carrier", NO_SIGNAL);
+		GsmActorPublishGsmCarrier("no carrier", NO_SIGNAL, gsmModem->phoneNumber);
+		if (oldCarrier != NULL)
+			free(oldCarrier);
 		return;
 	}
 	if (oldCarrier != NULL)
 	{
 		if ((strcmp(gsmModem->carrier, oldCarrier) != 0) || (oldsignalStrength != gsmModem->signalStrength))
-			GsmActorPublishGsmCarrier(gsmModem->carrier, gsmModem->signalStrength);
+			GsmActorPublishGsmCarrier(gsmModem->carrier, gsmModem->signalStrength, gsmModem->phoneNumber);
 	}
 	else
-		GsmActorPublishGsmCarrier(gsmModem->carrier, gsmModem->signalStrength);
+		GsmActorPublishGsmCarrier(gsmModem->carrier, gsmModem->signalStrength, gsmModem->phoneNumber);
+	if (oldCarrier != NULL)
+		free(oldCarrier);
 
 }
 
@@ -340,10 +366,35 @@ VOID GsmModemProcessLoop()
 	while(1)
 	{
 		GsmReportCarrier();
-		GsmModemCheckBilling();
 		sleep(1);
 	}
 }
+
+static VOID GsmModemInitIo()
+{
+	wiringPiSetupSys();
+	pinMode(GSM_POWER_PIN, OUTPUT);
+	pinMode(GSM_STATUS_PIN, INPUT);
+	digitalWrite(GSM_POWER_PIN, HIGH);
+}
+
+BOOL GsmModemPowerOn()
+{
+	BYTE nRetry = 3;
+	while (digitalRead(GSM_STATUS_PIN) == LOW)
+	{
+		digitalWrite(GSM_POWER_PIN, LOW);
+		usleep(1100000);
+		digitalWrite(GSM_POWER_PIN, HIGH);
+		usleep(2200000);
+		if (nRetry > 0)
+			nRetry--;
+		else
+			return (FALSE);
+	}
+	return TRUE;
+}
+
 
 BOOL GsmModemInit(char* SerialPort, int ttl)
 {
@@ -375,24 +426,12 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	memset(gsmModem, 0, sizeof(GSMMODEM));
 	gsmModem->serialPort = pSerialPort;
 	atRegisterIncommingProc(GsmModemProcessIncoming, (void*)gsmModem);
+	GsmModemInitIo();
 #ifdef PI_RUNNIN
-	// Init pin to control GSM gsmModem
-	wiringPiSetupSys();
-	pinMode(GSM_POWER_PIN, OUTPUT);
-	pinMode(GSM_STATUS_PIN, INPUT);
-	digitalWrite(GSM_POWER_PIN, HIGH);
-	// Hold power pin
-	BYTE nRetry = 3;
-	while (digitalRead(GSM_STATUS_PIN) == LOW)
+	if (!GsmModemPowerOn())
 	{
-		digitalWrite(GSM_POWER_PIN, LOW);
-		usleep(1100000);
-		digitalWrite(GSM_POWER_PIN, HIGH);
-		usleep(2200000);
-		if (nRetry > 0)
-			nRetry--;
-		else
-			return (FALSE);
+		printf("start gsm modem failed");
+		return FALSE;
 	}
 #endif
 	//atSendCommand("AT", gsmModem->serialPort); //send this command to flush all data from buffer
@@ -407,10 +446,11 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 
 	if (bCommandState != COMMAND_SUCCESS)
 	{
-		GsmActorPublishGsmStartedEvent("success");
+		GsmActorPublishGsmStartedEvent("failure");
 		printf("start gsm gsmModem failed\n");
 		return FALSE;
 	}
+	GsmGetPhoneNumber();
 	//check network status
 	GsmActorPublishGsmStartedEvent("success");
 	sleep(5);
