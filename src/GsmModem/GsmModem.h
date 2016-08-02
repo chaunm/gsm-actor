@@ -39,6 +39,7 @@ typedef struct tagGSMDEVICE {
 	BYTE 	status;
 	BYTE 	signalStrength;
 	BYTE 	powerMode;
+	BOOL 	simStatus;
 	char* 	waitingCommand;
 	char* 	commandStatus;
 	char* 	carrier;

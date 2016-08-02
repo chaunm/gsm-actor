@@ -316,8 +316,15 @@ BYTE GsmModemCheckRssi()
 BYTE GsmCheckSimCard()
 {
 	if (GsmModemExecuteCommand("AT+CPIN?") == COMMAND_SUCCESS)
+	{
+		gsmModem->simStatus = TRUE;
 		return COMMAND_SUCCESS;
-	GsmActorPublishGsmErrorEvent("simcard.error");
+	}
+	if (gsmModem->simStatus == TRUE)
+	{
+		GsmActorPublishGsmErrorEvent("simcard.error");
+		gsmModem->simStatus = FALSE;
+	}
 	return COMMAND_ERROR;
 }
 
@@ -433,6 +440,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	// Create gsm device
 	gsmModem = malloc(sizeof(GSMMODEM));
 	memset(gsmModem, 0, sizeof(GSMMODEM));
+	gsmModem->simStatus = TRUE;
 	gsmModem->serialPort = pSerialPort;
 	atRegisterIncommingProc(GsmModemProcessIncoming, (void*)gsmModem);
 	GsmModemInitIo();
