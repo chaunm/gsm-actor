@@ -313,12 +313,12 @@ BYTE GsmModemCheckRssi()
 	return result;
 }
 
-BOOL GsmCheckSimCard()
+BYTE GsmCheckSimCard()
 {
 	if (GsmModemExecuteCommand("AT+CPIN?") == COMMAND_SUCCESS)
-		return TRUE;
+		return COMMAND_SUCCESS;
 	GsmActorPublishGsmErrorEvent("simcard.error");
-	return FALSE;
+	return COMMAND_ERROR;
 }
 
 BOOL GsmGetPhoneNumber()
