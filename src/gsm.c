@@ -100,6 +100,7 @@ int main(int argc, char* argv[])
 	gsmActorOpt->host = mqttHost;
 	gsmActorOpt->port = mqttPort;
 	GsmActorStart(gsmActorOpt);
+	sleep(10); // wait for mqtt to connect
 	// GsmModem
 	if (GsmModemInit(SerialPort, ttl) == FALSE)
 		exit(0);

@@ -313,6 +313,14 @@ BYTE GsmModemCheckRssi()
 	return result;
 }
 
+BOOL GsmCheckSimCard()
+{
+	if (GsmModemExecuteCommand("AT+CPIN?") == COMMAND_SUCCESS)
+		return TRUE;
+	GsmActorPublishGsmErrorEvent("simcard.error");
+	return FALSE;
+}
+
 BOOL GsmGetPhoneNumber()
 {
 	if (GsmModemExecuteCommand("AT+CNUM") == COMMAND_SUCCESS)
@@ -365,6 +373,7 @@ VOID GsmModemProcessLoop()
 {
 	while(1)
 	{
+		GsmCheckSimCard();
 		GsmReportCarrier();
 		sleep(1);
 	}
@@ -439,6 +448,8 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	bCommandState += GsmModemExecuteCommand("ATE0"); //turn of echo
 	bCommandState += GsmModemExecuteCommand("ATV1"); //turn of echo
 	bCommandState += GsmModemExecuteCommand("AT+CSCLK=0"); // no sleep
+	// Check simcard error
+	bCommandState = GsmCheckSimCard();
 	bCommandState += GsmModemExecuteCommand("AT+CLIP=1"); // get caller information
 	bCommandState += GsmModemExecuteCommand("AT+CMGF=1"); // sms text mode
 	bCommandState += GsmModemExecuteCommand("AT+CNMI=3,2,0,1,0");
@@ -447,9 +458,10 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	if (bCommandState != COMMAND_SUCCESS)
 	{
 		GsmActorPublishGsmStartedEvent("failure");
-		printf("start gsm gsmModem failed\n");
+		printf("start gsm Modem failed\n");
 		return FALSE;
 	}
+
 	GsmGetPhoneNumber();
 	//check network status
 	GsmActorPublishGsmStartedEvent("success");
