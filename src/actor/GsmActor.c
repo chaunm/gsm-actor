@@ -346,7 +346,6 @@ static void GsmActorOnRequestMakeCall(PVOID pParam)
 	json_t* payloadJson = NULL;
 	json_t* paramsJson = NULL;
 	json_t* numberJson = NULL;
-
 	json_t* responseJson = NULL;
 	json_t* statusJson = NULL;
 	PACTORHEADER header;
@@ -426,6 +425,98 @@ static void GsmActorOnRequestMakeCall(PVOID pParam)
 	free(responseTopic);
 }
 
+static void GsmActorOnHiRequest(PVOID pParam)
+{
+	PGSMMODEM gsmInfo = GsmGetInfo();
+	char* message = (char*) pParam;
+	char **znpSplitMessage;
+	if (pGsmActor == NULL) return;
+	json_t* responseJson = NULL;
+	json_t* statusJson = NULL;
+	PACTORHEADER header;
+	char* responseTopic;
+	char* responseMessage;
+	znpSplitMessage = ActorSplitMessage(message);
+	if (znpSplitMessage == NULL)
+		return;
+	// parse header to get origin of message
+	header = ActorParseHeader(znpSplitMessage[0]);
+	if (header == NULL)
+	{
+		ActorFreeSplitMessage(znpSplitMessage);
+		return;
+	}
+	//make response package
+	responseJson = json_object();
+	statusJson = json_object();
+	json_t* requestJson = json_loads(znpSplitMessage[1], JSON_DECODE_ANY, NULL);
+	json_object_set(responseJson, "request", requestJson);
+	json_decref(requestJson);
+	json_t* resultJson = json_string("status.success");
+	json_object_set(statusJson, "status", resultJson);
+	json_decref(resultJson);
+	json_t* stateJson;
+	json_t* networkJson;
+	if (gsmInfo->carrier != NULL)
+	{
+		stateJson = json_string("connected");
+		networkJson = json_string(gsmInfo->carrier);
+	}
+	else
+	{
+		stateJson = json_string("disconnected");
+		networkJson = json_string("no network");
+	}
+	json_object_set(statusJson, "state", stateJson);
+	json_object_set(statusJson, "network", networkJson);
+	json_decref(stateJson);
+	json_decref(networkJson);
+	json_t* signalJson = NULL;
+	switch (gsmInfo->signalStrength)
+	{
+	case NO_SIGNAL:
+		signalJson = json_string("status.no_signal");
+		break;
+	case SIGNAL_POOR:
+		signalJson = json_string("status.poor");
+		break;
+	case SIGNAL_FAIR:
+		signalJson = json_string("status.fair");
+		break;
+	case SIGNAL_GOOD:
+		signalJson = json_string("status.good");
+		break;
+	case SIGNAL_EXCELLENT:
+		signalJson = json_string("status.excellent");
+		break;
+	default:
+		signalJson = json_string("status.unknown");
+		break;
+	}
+	json_object_set(statusJson, "signal", signalJson);
+	json_decref(signalJson);
+	json_t* numberJson;
+	if (gsmInfo->phoneNumber != NULL)
+		numberJson = json_string(gsmInfo->phoneNumber);
+	else
+		numberJson = json_string("unknown");
+	json_object_set(statusJson, "number", numberJson);
+	json_decref(numberJson);
+	json_t* ballanceJson = json_string("unknown");
+	json_object_set(statusJson, "ballance", ballanceJson);
+	json_decref(ballanceJson);
+
+	json_object_set(responseJson, "response", statusJson);
+	json_decref(statusJson);
+	responseMessage = json_dumps(responseJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
+	responseTopic = ActorMakeTopicName(header->origin, "/:response");
+	ActorFreeHeaderStruct(header);
+	json_decref(responseJson);
+	ActorFreeSplitMessage(znpSplitMessage);
+	ActorSend(pGsmActor, responseTopic, responseMessage, NULL, FALSE);
+	free(responseMessage);
+	free(responseTopic);
+}
 static void GsmActorCreate(char* guid, char* psw, char* host, WORD port)
 {
 	pGsmActor = ActorCreate(guid, psw, host, port);
@@ -437,6 +528,7 @@ static void GsmActorCreate(char* guid, char* psw, char* host, WORD port)
 	}
 	ActorRegisterCallback(pGsmActor, ":request/send_sms", GsmActorOnRequestSendSms, CALLBACK_RETAIN);
 	ActorRegisterCallback(pGsmActor, ":request/make_call", GsmActorOnRequestMakeCall, CALLBACK_RETAIN);
+	ActorRegisterCallback(pGsmActor, ":request/Hi", GsmActorOnHiRequest, CALLBACK_RETAIN);
 }
 
 static void ZnpActorProcess(PACTOROPTION option)

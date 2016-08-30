@@ -48,6 +48,7 @@ typedef struct tagGSMDEVICE {
 
 BYTE GsmModemSendSms(const char* number, const char* message);
 BYTE GsmModemMakeCall(const char* number);
+PGSMMODEM GsmGetInfo();
 BOOL GsmModemInit(char* SerialPort, int ttl);
 VOID GsmModemDeInit();
 

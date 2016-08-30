@@ -411,6 +411,10 @@ BOOL GsmModemPowerOn()
 	return TRUE;
 }
 
+PGSMMODEM GsmGetInfo()
+{
+	return gsmModem;
+}
 
 BOOL GsmModemInit(char* SerialPort, int ttl)
 {
