@@ -74,16 +74,23 @@ void GsmActorPublishGsmStartedEvent(char* result)
 	free(eventMessage);
 }
 
-void GsmActorPublishGsmErrorEvent(char* error)
+void GsmActorPublishGsmErrorEvent(char* error, char* message)
 {
 	if (pGsmActor == NULL) return;
 	json_t* eventJson = json_object();
 	json_t* paramsJson = json_object();
 	json_t* errorJson = NULL;
+	json_t* errorMesgJson = NULL;
 	char* errorMessage = malloc(250);
-	sprintf(errorMessage, "status.error.%s", error);
+	sprintf(errorMessage, "error.%s", error);
 	errorJson = json_string(errorMessage);
-	json_object_set(paramsJson, "from", errorJson);
+	json_object_set(paramsJson, "error", errorJson);
+	if (message != NULL)
+	{
+		errorMesgJson = json_string(message);
+		json_object_set(paramsJson, "error_message", errorMesgJson);
+		json_decref(errorMesgJson);
+	}
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
 	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/gsm_error");

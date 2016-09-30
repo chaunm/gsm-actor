@@ -13,7 +13,7 @@
 void GsmActorPublishSmsReceivedEvent(char* from, char* message);
 void GsmActorPublishCallReceivedEvent(char* from);
 void GsmActorPublishGsmStartedEvent(char* result);
-void GsmActorPublishGsmErrorEvent(char* error);
+void GsmActorPublishGsmErrorEvent(char* error, char* message);
 void GsmActorPublishGsmBillingReport(char* report);
 void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength, char* number);
 void GsmActorPublishSignalStrength(BYTE signalStrength);

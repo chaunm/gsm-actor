@@ -70,7 +70,7 @@ BYTE GsmModemExecuteCommand(char* command)
 		{
 			printf("command %s timeout\n", gsmModem->waitingCommand);
 			sprintf(eventMessage, "command.%s.timeout", gsmModem->waitingCommand);
-			GsmActorPublishGsmErrorEvent(eventMessage);
+			GsmActorPublishGsmErrorEvent(eventMessage, NULL);
 			GsmModemSetStatus(GSM_MODEM_ACTIVE, NULL);
 			free(eventMessage);
 			return COMMAND_TIMEOUT;
@@ -80,7 +80,7 @@ BYTE GsmModemExecuteCommand(char* command)
 	{
 		printf("command %s failed\n", gsmModem->waitingCommand);
 		sprintf(eventMessage, "command.%s.error", gsmModem->waitingCommand);
-		GsmActorPublishGsmErrorEvent(eventMessage);
+		GsmActorPublishGsmErrorEvent(eventMessage, gsmModem->commandStatus);
 		GsmModemSetStatus(GSM_MODEM_ACTIVE, NULL);
 		free(eventMessage);
 		return COMMAND_ERROR;
@@ -131,6 +131,7 @@ VOID GsmModemProcessIncoming(void* pParam, char* message)
 	{
 		printf("command %s execute failed\n", gsmModem->waitingCommand);
 		GsmModemSetStatus(GSM_MODEM_CMD_ERROR, gsmModem->waitingCommand);
+		GsmModemSetCmdStatus(message);
 	}
 	else
 	{
@@ -248,7 +249,7 @@ BYTE GsmModemSendSms(const char* number, const char* message)
 		{
 			printf("command %s timeout\n", gsmModem->waitingCommand);
 			sprintf(eventMessage, "command.%s.timeout", gsmModem->waitingCommand);
-			GsmActorPublishGsmErrorEvent(eventMessage);
+			GsmActorPublishGsmErrorEvent(eventMessage, NULL);
 			GsmModemSetStatus(GSM_MODEM_ACTIVE, NULL);
 			free(eventMessage);
 			return COMMAND_TIMEOUT;
@@ -258,7 +259,7 @@ BYTE GsmModemSendSms(const char* number, const char* message)
 	{
 		printf("send sms failed %s\n", gsmModem->waitingCommand);
 		sprintf(eventMessage, "command.%s.error", gsmModem->waitingCommand);
-		GsmActorPublishGsmErrorEvent(eventMessage);
+		GsmActorPublishGsmErrorEvent(eventMessage, gsmModem->commandStatus);
 		GsmModemSetStatus(GSM_MODEM_ACTIVE, NULL);
 		free(eventMessage);
 		return COMMAND_ERROR;
@@ -320,9 +321,9 @@ BYTE GsmCheckSimCard()
 		gsmModem->simStatus = TRUE;
 		return COMMAND_SUCCESS;
 	}
-	if (gsmModem->simStatus == TRUE)
+	else if (gsmModem->simStatus == TRUE)
 	{
-		GsmActorPublishGsmErrorEvent("simcard.error");
+		GsmActorPublishGsmErrorEvent("simcard", NULL);
 		gsmModem->simStatus = FALSE;
 	}
 	return COMMAND_ERROR;
