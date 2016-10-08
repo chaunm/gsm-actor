@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <stdio.h>
 #ifdef PI_RUNNING
 #include <wiringPi.h>
 #endif
@@ -389,10 +390,16 @@ VOID GsmModemProcessLoop()
 
 static VOID GsmModemInitIo()
 {
+	char command[255];
+	printf("Init IO for control gsm\n");
+	sprintf(command, "gpio export %d in", GSM_STATUS_PIN);
+	system(command);
+	sprintf(command, "gpio export %d out", GSM_POWER_PIN);
+	system(command);
 	wiringPiSetupSys();
 	pinMode(GSM_POWER_PIN, OUTPUT);
 	pinMode(GSM_STATUS_PIN, INPUT);
-	digitalWrite(GSM_POWER_PIN, HIGH);
+	digitalWrite(GSM_POWER_PIN, LOW);
 }
 
 BOOL GsmModemPowerOn()
@@ -400,10 +407,10 @@ BOOL GsmModemPowerOn()
 	BYTE nRetry = 3;
 	while (digitalRead(GSM_STATUS_PIN) == LOW)
 	{
-		digitalWrite(GSM_POWER_PIN, LOW);
-		usleep(1100000);
 		digitalWrite(GSM_POWER_PIN, HIGH);
-		usleep(2200000);
+		sleep(2);
+		digitalWrite(GSM_POWER_PIN, LOW);
+		sleep(2);
 		if (nRetry > 0)
 			nRetry--;
 		else
@@ -449,10 +456,10 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	gsmModem->serialPort = pSerialPort;
 	atRegisterIncommingProc(GsmModemProcessIncoming, (void*)gsmModem);
 	GsmModemInitIo();
-#ifdef PI_RUNNIN
+#ifdef PI_RUNNING
 	if (!GsmModemPowerOn())
 	{
-		printf("start gsm modem failed");
+		printf("can not power on gsm module\n");
 		return FALSE;
 	}
 #endif

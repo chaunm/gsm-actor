@@ -11,8 +11,8 @@
 #include "serialcommunication.h"
 
 #ifdef PI_RUNNING
-#define GSM_POWER_PIN		22
-#define GSM_STATUS_PIN		21
+#define GSM_POWER_PIN		17
+#define GSM_STATUS_PIN		27
 #endif
 
 #define GSM_MODEM_ACTIVE		0x00
