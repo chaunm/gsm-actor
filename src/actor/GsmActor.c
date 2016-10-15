@@ -28,8 +28,8 @@ void GsmActorPublishSmsReceivedEvent(char* from, char* message)
 	json_object_set(paramsJson, "message", messageJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/sms_received");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/sms_received");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	json_decref(fromJson);
 	json_decref(messageJson);
 	json_decref(paramsJson);
@@ -47,8 +47,8 @@ void GsmActorPublishCallReceivedEvent(char* from)
 	json_object_set(paramsJson, "from", fromJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/call_received");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/call_received");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	json_decref(fromJson);
 	json_decref(paramsJson);
 	json_decref(eventJson);
@@ -65,8 +65,8 @@ void GsmActorPublishGsmStartedEvent(char* result)
 	json_object_set(paramsJson, "status", resultJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/gsm_start");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/gsm_start");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	json_decref(resultJson);
 	json_decref(paramsJson);
 	json_decref(eventJson);
@@ -93,8 +93,8 @@ void GsmActorPublishGsmErrorEvent(char* error, char* message)
 	}
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/gsm_error");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/gsm_error");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	free(errorMessage);
 	json_decref(errorJson);
 	json_decref(paramsJson);
@@ -112,8 +112,8 @@ void GsmActorPublishGsmBillingReport(char* report)
 	json_object_set(paramsJson, "report", reportJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/billing_report");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/billing_report");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	json_decref(reportJson);
 	json_decref(paramsJson);
 	json_decref(eventJson);
@@ -161,8 +161,8 @@ void GsmActorPublishGsmCarrier(char* carrier, BYTE signalStrength, char* number)
 	json_object_set(paramsJson, "rssi", rssiJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/carrier_report");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/carrier_report");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	json_decref(carrierJson);
 	json_decref(numberJson);
 	json_decref(rssiJson);
@@ -206,8 +206,8 @@ void GsmActorPublishSignalStrength(BYTE signalStrength)
 	json_object_set(paramsJson, "report", reportJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/rssi_report");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/rssi_report");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	free(signalReport);
 	json_decref(reportJson);
 	json_decref(paramsJson);
@@ -229,8 +229,8 @@ void GsmActorPublishPhoneNumber(char* number)
 	json_object_set(paramsJson, "number", numberJson);
 	json_object_set(eventJson, "params", paramsJson);
 	char* eventMessage = json_dumps(eventJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	char* topicName = ActorMakeTopicName(pGsmActor->guid, "/:event/number_report");
-	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE);
+	char* topicName = ActorMakeTopicName("event/", pGsmActor->guid, "/number_report");
+	ActorSend(pGsmActor, topicName, eventMessage, NULL, FALSE, topicName);
 	json_decref(numberJson);
 	json_decref(paramsJson);
 	json_decref(eventJson);
@@ -336,11 +336,12 @@ static void GsmActorOnRequestSendSms(PVOID pParam)
 	json_object_set(responseJson, "response", statusJson);
 	json_decref(statusJson);
 	responseMessage = json_dumps(responseJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	responseTopic = ActorMakeTopicName(header->origin, "/:response");
+	//responseTopic = ActorMakeTopicName(header->origin, "/:response");
+	responseTopic = StrDup(header->origin);
 	ActorFreeHeaderStruct(header);
 	json_decref(responseJson);
 	ActorFreeSplitMessage(znpSplitMessage);
-	ActorSend(pGsmActor, responseTopic, responseMessage, NULL, FALSE);
+	ActorSend(pGsmActor, responseTopic, responseMessage, NULL, FALSE, "response");
 	free(responseMessage);
 	free(responseTopic);
 }
@@ -423,11 +424,12 @@ static void GsmActorOnRequestMakeCall(PVOID pParam)
 	json_object_set(responseJson, "response", statusJson);
 	json_decref(statusJson);
 	responseMessage = json_dumps(responseJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	responseTopic = ActorMakeTopicName(header->origin, "/:response");
+	//responseTopic = ActorMakeTopicName(header->origin, "/:response");
+	responseTopic = StrDup(header->origin);
 	ActorFreeHeaderStruct(header);
 	json_decref(responseJson);
 	ActorFreeSplitMessage(znpSplitMessage);
-	ActorSend(pGsmActor, responseTopic, responseMessage, NULL, FALSE);
+	ActorSend(pGsmActor, responseTopic, responseMessage, NULL, FALSE, "response");
 	free(responseMessage);
 	free(responseTopic);
 }
@@ -516,11 +518,12 @@ static void GsmActorOnHiRequest(PVOID pParam)
 	json_object_set(responseJson, "response", statusJson);
 	json_decref(statusJson);
 	responseMessage = json_dumps(responseJson, JSON_INDENT(4) | JSON_REAL_PRECISION(4));
-	responseTopic = ActorMakeTopicName(header->origin, "/:response");
+	//responseTopic = ActorMakeTopicName(header->origin, "/:response");
+	responseTopic = StrDup(header->origin);
 	ActorFreeHeaderStruct(header);
 	json_decref(responseJson);
 	ActorFreeSplitMessage(znpSplitMessage);
-	ActorSend(pGsmActor, responseTopic, responseMessage, NULL, FALSE);
+	ActorSend(pGsmActor, responseTopic, responseMessage, NULL, FALSE, "response");
 	free(responseMessage);
 	free(responseTopic);
 }
@@ -533,9 +536,16 @@ static void GsmActorCreate(char* guid, char* psw, char* host, WORD port)
 		printf("Couldn't create actor\n");
 		return;
 	}
-	ActorRegisterCallback(pGsmActor, ":request/send_sms", GsmActorOnRequestSendSms, CALLBACK_RETAIN);
-	ActorRegisterCallback(pGsmActor, ":request/make_call", GsmActorOnRequestMakeCall, CALLBACK_RETAIN);
-	ActorRegisterCallback(pGsmActor, ":request/Hi", GsmActorOnHiRequest, CALLBACK_RETAIN);
+	char* topicName;
+	topicName = ActorMakeTopicName("action/", guid, "/send_sms");
+	ActorRegisterCallback(pGsmActor, topicName, GsmActorOnRequestSendSms, CALLBACK_RETAIN);
+	free(topicName);
+	topicName = ActorMakeTopicName("action/", guid, "/make_call");
+	ActorRegisterCallback(pGsmActor, topicName, GsmActorOnRequestMakeCall, CALLBACK_RETAIN);
+	free(topicName);
+	topicName = ActorMakeTopicName("action/", guid, "/hi");
+	ActorRegisterCallback(pGsmActor, topicName, GsmActorOnHiRequest, CALLBACK_RETAIN);
+	free(topicName);
 }
 
 static void ZnpActorProcess(PACTOROPTION option)
