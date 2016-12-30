@@ -276,7 +276,7 @@ BYTE GsmModemMakeCall(const char* number)
 	if (number == NULL)
 		return COMMAND_SUCCESS;
 	char* command = malloc(50);
-	memset(command, 50, 0);
+	memset(command, 0, 50);
 	strcpy(command, "ATD");
 	strcat(command, number);
 	strcat(command, ";");
