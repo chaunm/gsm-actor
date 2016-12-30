@@ -213,7 +213,7 @@ BYTE GsmModemCheckBilling()
 		//return COMMAND_SUCCESS;
 	BYTE result;
 	char* command = malloc(50);
-	memset(command, 50, 0);
+	memset(command, 0, 50);
 	strcpy(command, "ATD");
 	strcat(command, "*101#;");
 	result = GsmModemExecuteCommand(command);
