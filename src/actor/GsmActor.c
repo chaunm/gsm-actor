@@ -548,7 +548,7 @@ static void GsmActorCreate(char* guid, char* psw, char* host, WORD port)
 	free(topicName);
 }
 
-static void ZnpActorProcess(PACTOROPTION option)
+static void GsmActorProcess(PACTOROPTION option)
 {
 	mosquitto_lib_init();
 	GsmActorCreate(option->guid, option->psw, option->host, option->port);
@@ -570,6 +570,6 @@ static void ZnpActorProcess(PACTOROPTION option)
 
 void GsmActorStart(PACTOROPTION option)
 {
-	pthread_create(&gsmActorThread, NULL, (void*)&ZnpActorProcess, (void*)option);
+	pthread_create(&gsmActorThread, NULL, (void*)&GsmActorProcess, (void*)option);
 	pthread_detach(gsmActorThread);
 }
