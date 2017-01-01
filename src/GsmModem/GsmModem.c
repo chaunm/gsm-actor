@@ -405,8 +405,8 @@ static VOID GsmModemInitIo()
 BOOL GsmModemPowerOn()
 {
 	static BYTE nCount;
-	if (digitalRead(GSM_STATUS_PIN) == HIGH)
-		return TRUE;
+//	if (digitalRead(GSM_STATUS_PIN) == HIGH)
+//		return TRUE;
 	digitalWrite(GSM_POWER_PIN, HIGH);
 	sleep(2);
 	digitalWrite(GSM_POWER_PIN, LOW);
