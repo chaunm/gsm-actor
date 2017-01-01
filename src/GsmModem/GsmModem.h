@@ -20,6 +20,8 @@
 #endif
 #endif
 
+#define SIM_800_BOOT_TIME 	30
+
 #define GSM_MODEM_ACTIVE		0x00
 #define	GSM_MODEM_WAITING		0x01
 #define GSM_MODEM_CMD_ERROR		0x02

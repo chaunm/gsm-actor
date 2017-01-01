@@ -404,17 +404,19 @@ static VOID GsmModemInitIo()
 
 BOOL GsmModemPowerOn()
 {
-	BYTE nRetry = 3;
+	static BYTE nCount;
+	if (digitalRead(GSM_STATUS_PIN) == HIGH)
+		return TRUE;
+	digitalWrite(GSM_POWER_PIN, HIGH);
+	sleep(2);
+	digitalWrite(GSM_POWER_PIN, LOW);
+	sleep(2);
 	while (digitalRead(GSM_STATUS_PIN) == LOW)
 	{
-		digitalWrite(GSM_POWER_PIN, HIGH);
-		sleep(2);
-		digitalWrite(GSM_POWER_PIN, LOW);
-		sleep(2);
-		if (nRetry > 0)
-			nRetry--;
-		else
-			return (FALSE);
+		sleep(1);
+		nCount++;
+		if (nCount == SIM_800_BOOT_TIME)
+			return FALSE;
 	}
 	return TRUE;
 }
@@ -430,6 +432,15 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	static pthread_t SerialOutputThread;
 	static pthread_t SerialHandleThread;
 	BYTE bCommandState = COMMAND_SUCCESS;
+	// turn on gsm module
+	GsmModemInitIo();
+#ifdef PI_RUNNING
+	if (!GsmModemPowerOn())
+	{
+		printf("can not power on gsm module\n");
+		return FALSE;
+	}
+#endif
 	// open serial port
 	char* PortName = malloc(strlen("/dev/") + strlen(SerialPort) + 1);
 	memset(PortName, 0, strlen("/dev/") + strlen(SerialPort) + 1);
@@ -455,25 +466,21 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	gsmModem->simStatus = TRUE;
 	gsmModem->serialPort = pSerialPort;
 	atRegisterIncommingProc(GsmModemProcessIncoming, (void*)gsmModem);
-	GsmModemInitIo();
-#ifdef PI_RUNNING
-	if (!GsmModemPowerOn())
-	{
-		printf("can not power on gsm module\n");
-		return FALSE;
-	}
-#endif
-	//atSendCommand("AT", gsmModem->serialPort); //send this command to flush all data from buffer
+	// start up commands
+	atSendCommand("AT", gsmModem->serialPort); //send this command to flush all data from buffer
+	sleep(1);
+	atSendCommand("ATE0", gsmModem->serialPort);
 	sleep(2);
 	bCommandState += GsmModemExecuteCommand("ATE0"); //turn of echo
-	bCommandState += GsmModemExecuteCommand("ATV1"); //turn of echo
+	bCommandState += GsmModemExecuteCommand("ATV1");
 	bCommandState += GsmModemExecuteCommand("AT+CSCLK=0"); // no sleep
 	// Check simcard error
 	bCommandState = GsmCheckSimCard();
 	bCommandState += GsmModemExecuteCommand("AT+CLIP=1"); // get caller information
 	bCommandState += GsmModemExecuteCommand("AT+CMGF=1"); // sms text mode
 	bCommandState += GsmModemExecuteCommand("AT+CNMI=3,2,0,1,0");
-	bCommandState += GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
+	sleep(1);
+	GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
 
 	if (bCommandState != COMMAND_SUCCESS)
 	{
