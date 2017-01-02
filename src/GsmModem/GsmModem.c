@@ -53,6 +53,8 @@ VOID GsmModemSetCmdStatus(char* commandStatus)
 BYTE GsmModemExecuteCommand(char* command)
 {
 	WORD timeout;
+	if (gsmModem->status == GSM_MODEM_OFF)
+		return COMMAND_ERROR;
 	while(gsmModem->status != GSM_MODEM_ACTIVE)
 	{
 		sleep(1);
@@ -140,6 +142,11 @@ VOID GsmModemProcessIncoming(void* pParam, char* message)
 		if(commandStatus != NULL)
 		{
 			GsmModemSetCmdStatus(commandStatus);
+			//CME ERROR Report
+			if (strstr(message, "+CME ERROR:") || strstr(message, "+CMS ERROR:"))
+			{
+				GsmModemSetStatus(GSM_MODEM_CMD_ERROR, gsmModem->waitingCommand);
+			}
 			free(commandStatus);
 		}
 	}
@@ -214,8 +221,7 @@ BYTE GsmModemCheckBilling()
 	BYTE result;
 	char* command = malloc(50);
 	memset(command, 0, 50);
-	strcpy(command, "ATD");
-	strcat(command, "*101#;");
+	strcpy(command, "AT+CUSD=1,\"*101#\"");
 	result = GsmModemExecuteCommand(command);
 	free(command);
 	return result;
@@ -317,6 +323,12 @@ BYTE GsmModemCheckRssi()
 
 BYTE GsmCheckSimCard()
 {
+	static WORD nCount = CHECK_CARRIER_PERIOD - 1;
+	nCount++;
+	if (nCount == 10 * CHECK_SIM_CARD_PERIOD)
+		nCount = 0;
+	if ((nCount % CHECK_SIM_CARD_PERIOD) != 0)
+		return COMMAND_SUCCESS;
 	if (GsmModemExecuteCommand("AT+CPIN?") == COMMAND_SUCCESS)
 	{
 		gsmModem->simStatus = TRUE;
@@ -330,6 +342,17 @@ BYTE GsmCheckSimCard()
 	return COMMAND_ERROR;
 }
 
+VOID GsmCheckStatus()
+{
+	if (digitalRead(GSM_STATUS_PIN) == LOW)
+	{
+		if (gsmModem->status != GSM_MODEM_OFF)
+		{
+			gsmModem->status = GSM_MODEM_OFF;
+			GsmActorPublishGsmErrorEvent("sim800.off", NULL);
+		}
+	}
+}
 BOOL GsmGetPhoneNumber()
 {
 	if (GsmModemExecuteCommand("AT+CNUM") == COMMAND_SUCCESS)
@@ -375,7 +398,6 @@ VOID GsmReportCarrier()
 		GsmActorPublishGsmCarrier(gsmModem->carrier, gsmModem->signalStrength, gsmModem->phoneNumber);
 	if (oldCarrier != NULL)
 		free(oldCarrier);
-
 }
 
 VOID GsmModemProcessLoop()
@@ -384,6 +406,7 @@ VOID GsmModemProcessLoop()
 	{
 		GsmCheckSimCard();
 		GsmReportCarrier();
+		GsmCheckStatus();
 		sleep(1);
 	}
 }
@@ -405,8 +428,8 @@ static VOID GsmModemInitIo()
 BOOL GsmModemPowerOn()
 {
 	static BYTE nCount;
-//	if (digitalRead(GSM_STATUS_PIN) == HIGH)
-//		return TRUE;
+	if (digitalRead(GSM_STATUS_PIN) == HIGH)
+		return TRUE;
 	digitalWrite(GSM_POWER_PIN, HIGH);
 	sleep(2);
 	digitalWrite(GSM_POWER_PIN, LOW);
@@ -479,6 +502,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	bCommandState += GsmModemExecuteCommand("AT+CLIP=1"); // get caller information
 	bCommandState += GsmModemExecuteCommand("AT+CMGF=1"); // sms text mode
 	bCommandState += GsmModemExecuteCommand("AT+CNMI=3,2,0,1,0");
+	bCommandState += GsmModemExecuteCommand("AT+CMEE=1");
 	sleep(1);
 	GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
 
