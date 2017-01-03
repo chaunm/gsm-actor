@@ -17,8 +17,12 @@
 #include "ATCommand.h"
 #include "serialcommunication.h"
 #include "GsmActor.h"
+#include "../log/log.h"
 
 PGSMMODEM gsmModem = NULL;
+WORD gsmCheckBillingCount;
+
+static BOOL GsmModemRestart();
 
 BYTE GsmModemGetStatus()
 {
@@ -288,7 +292,8 @@ BYTE GsmModemMakeCall(const char* number)
 	strcat(command, ";");
 	result = GsmModemExecuteCommand(command);
 	free(command);
-	GsmModemCheckBilling();
+	//GsmModemCheckBilling();
+	gsmCheckBillingCount = 120;
 	return result;
 }
 
@@ -350,6 +355,8 @@ VOID GsmCheckStatus()
 		{
 			gsmModem->status = GSM_MODEM_OFF;
 			GsmActorPublishGsmErrorEvent("sim800.off", NULL);
+			LogWrite("Gsm Modem turned off");
+			GsmModemRestart();
 		}
 	}
 }
@@ -370,6 +377,14 @@ VOID GsmReportCarrier()
 	char* oldCarrier = StrDup(gsmModem->carrier);
 	BYTE oldsignalStrength = gsmModem->signalStrength;
 	static WORD nCount = CHECK_CARRIER_PERIOD - 1;
+	/* check billing report if needed */
+	if (gsmCheckBillingCount > 0)
+	{
+		gsmCheckBillingCount--;
+		if (gsmCheckBillingCount == 0)
+			GsmModemCheckBilling();
+	}
+	/* check carrier status */
 	nCount++;
 	if (nCount == 10 * CHECK_CARRIER_PERIOD)
 		nCount = 0;
@@ -460,6 +475,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 #ifdef PI_RUNNING
 	if (!GsmModemPowerOn())
 	{
+		LogWrite("Gsm Modem start fail");
 		printf("can not power on gsm module\n");
 		return FALSE;
 	}
@@ -509,6 +525,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	if (bCommandState != COMMAND_SUCCESS)
 	{
 		GsmActorPublishGsmStartedEvent("failure");
+		LogWrite("Gsm Modem start fail");
 		printf("start gsm Modem failed\n");
 		return FALSE;
 	}
@@ -516,8 +533,57 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	GsmGetPhoneNumber();
 	//check network status
 	GsmActorPublishGsmStartedEvent("success");
+	LogWrite("Gsm Modem start succeed");
 	sleep(5);
 	GsmModemProcessLoop();
+	return TRUE;
+}
+
+static BOOL GsmModemRestart()
+{
+	LogWrite("Restart Gsm Modem");
+	BYTE bCommandState = COMMAND_SUCCESS;
+	// turn on gsm module
+#ifdef PI_RUNNING
+	if (!GsmModemPowerOn())
+	{
+		printf("can not power on gsm module\n");
+		LogWrite("Gsm Modem restart fail");
+		return FALSE;
+	}
+#endif
+	gsmModem->simStatus = TRUE;
+	// start up commands
+	atSendCommand("AT", gsmModem->serialPort); //send this command to flush all data from buffer
+	sleep(1);
+	atSendCommand("ATE0", gsmModem->serialPort);
+	sleep(2);
+	bCommandState += GsmModemExecuteCommand("ATE0"); //turn of echo
+	bCommandState += GsmModemExecuteCommand("ATV1");
+	bCommandState += GsmModemExecuteCommand("AT+CSCLK=0"); // no sleep
+	// Check simcard error
+	bCommandState = GsmCheckSimCard();
+	bCommandState += GsmModemExecuteCommand("AT+CLIP=1"); // get caller information
+	bCommandState += GsmModemExecuteCommand("AT+CMGF=1"); // sms text mode
+	bCommandState += GsmModemExecuteCommand("AT+CNMI=3,2,0,1,0");
+	bCommandState += GsmModemExecuteCommand("AT+CMEE=1");
+	sleep(1);
+	GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
+
+	if (bCommandState != COMMAND_SUCCESS)
+	{
+		GsmActorPublishGsmStartedEvent("failure");
+		printf("start gsm Modem failed\n");
+		LogWrite("Gsm Modem restart fail");
+		return FALSE;
+	}
+
+	GsmGetPhoneNumber();
+	//check network status
+	GsmActorPublishGsmStartedEvent("success");
+	LogWrite("Gsm Modem restart succeed");
+//	sleep(5);
+//	GsmModemProcessLoop();
 	return TRUE;
 }
 
