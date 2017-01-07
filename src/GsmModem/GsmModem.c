@@ -83,6 +83,7 @@ BYTE GsmModemExecuteCommand(char* command)
 		{
 			printf("command %s timeout\n", gsmModem->waitingCommand);
 			sprintf(eventMessage, "command.%s.timeout", gsmModem->waitingCommand);
+			LogWrite(eventMessage);
 			GsmActorPublishGsmErrorEvent(eventMessage, NULL);
 			GsmModemSetStatus(GSM_MODEM_ACTIVE, NULL);
 			free(eventMessage);
@@ -93,6 +94,7 @@ BYTE GsmModemExecuteCommand(char* command)
 	{
 		printf("command %s failed\n", gsmModem->waitingCommand);
 		sprintf(eventMessage, "command.%s.error", gsmModem->waitingCommand);
+		LogWrite(eventMessage);
 		GsmActorPublishGsmErrorEvent(eventMessage, gsmModem->commandStatus);
 		GsmModemSetStatus(GSM_MODEM_ACTIVE, NULL);
 		free(eventMessage);
@@ -527,8 +529,9 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	bCommandState += GsmModemExecuteCommand("AT+CLIP=1"); // get caller information
 	bCommandState += GsmModemExecuteCommand("AT+CMGF=1"); // sms text mode
 	bCommandState += GsmModemExecuteCommand("AT+CNMI=3,2,0,1,0");
-	bCommandState += GsmModemExecuteCommand("AT+CMEE=1");
+
 	sleep(1);
+	GsmModemExecuteCommand("AT+CMEE=1");
 	GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
 
 	if (bCommandState != COMMAND_SUCCESS)
