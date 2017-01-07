@@ -21,8 +21,14 @@
 
 PGSMMODEM gsmModem = NULL;
 WORD gsmCheckBillingCount;
+BYTE gsmRestartCount;
 
 static BOOL GsmModemRestart();
+
+static VOID GsmSetRestart(BYTE nCount)
+{
+	gsmRestartCount = nCount;
+}
 
 BYTE GsmModemGetStatus()
 {
@@ -216,12 +222,6 @@ BOOL GsmModemCheckCarrierRegister()
 
 BYTE GsmModemCheckBilling()
 {
-	//static LONG nCount = CHECK_BILLING_PERIOD - 1;
-	//nCount++;
-	//if (nCount == (10 * CHECK_BILLING_PERIOD))
-		//nCount = 0;
-	//if ((nCount % CHECK_BILLING_PERIOD) != 0)
-		//return COMMAND_SUCCESS;
 	BYTE result;
 	char* command = malloc(50);
 	memset(command, 0, 50);
@@ -356,8 +356,16 @@ VOID GsmCheckStatus()
 			gsmModem->status = GSM_MODEM_OFF;
 			GsmActorPublishGsmErrorEvent("sim800.off", NULL);
 			LogWrite("Gsm Modem turned off");
-			GsmModemRestart();
+			GsmSetRestart(20);
 		}
+	}
+	else
+		GsmSetRestart(0);
+	if (gsmRestartCount > 0)
+	{
+		gsmRestartCount--;
+		if (gsmRestartCount == 0)
+			GsmModemRestart();
 	}
 }
 BOOL GsmGetPhoneNumber()
@@ -491,6 +499,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	{
 		printf("Can not open serial port %s, try another port\n", PortName);
 		GsmActorPublishGsmStartedEvent("failure");
+		GsmSetRestart(20);
 		return FALSE;
 	}
 	free(PortName);
@@ -527,6 +536,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 		GsmActorPublishGsmStartedEvent("failure");
 		LogWrite("Gsm Modem start fail");
 		printf("start gsm Modem failed\n");
+		GsmSetRestart(20);
 		return FALSE;
 	}
 
@@ -548,7 +558,8 @@ static BOOL GsmModemRestart()
 	if (!GsmModemPowerOn())
 	{
 		printf("can not power on gsm module\n");
-		LogWrite("Gsm Modem restart fail");
+		LogWrite("Gsm Modem restart fail 1");
+		GsmSetRestart(20);
 		return FALSE;
 	}
 #endif
@@ -574,7 +585,8 @@ static BOOL GsmModemRestart()
 	{
 		GsmActorPublishGsmStartedEvent("failure");
 		printf("start gsm Modem failed\n");
-		LogWrite("Gsm Modem restart fail");
+		LogWrite("Gsm Modem restart fail 2");
+		GsmSetRestart(20);
 		return FALSE;
 	}
 
