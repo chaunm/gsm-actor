@@ -346,6 +346,7 @@ BYTE GsmCheckSimCard()
 		GsmActorPublishGsmErrorEvent("simcard", NULL);
 		gsmModem->simStatus = FALSE;
 	}
+	LogWrite("Sim card error");
 	return COMMAND_ERROR;
 }
 
@@ -358,7 +359,7 @@ VOID GsmCheckStatus()
 			gsmModem->status = GSM_MODEM_OFF;
 			GsmActorPublishGsmErrorEvent("sim800.off", NULL);
 			LogWrite("Gsm Modem turned off");
-			GsmSetRestart(20);
+			GsmSetRestart(5);
 		}
 	}
 	else
@@ -366,6 +367,7 @@ VOID GsmCheckStatus()
 	if (gsmRestartCount > 0)
 	{
 		gsmRestartCount--;
+		printf("%d\n", gsmRestartCount);
 		if (gsmRestartCount == 0)
 			GsmModemRestart();
 	}
@@ -501,7 +503,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	{
 		printf("Can not open serial port %s, try another port\n", PortName);
 		GsmActorPublishGsmStartedEvent("failure");
-		GsmSetRestart(20);
+		GsmSetRestart(5);
 		return FALSE;
 	}
 	free(PortName);
@@ -520,8 +522,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	atSendCommand("AT", gsmModem->serialPort); //send this command to flush all data from buffer
 	sleep(1);
 	atSendCommand("ATE0", gsmModem->serialPort);
-	sleep(2);
-	bCommandState += GsmModemExecuteCommand("ATE0"); //turn of echo
+	sleep(1);
 	bCommandState += GsmModemExecuteCommand("ATV1");
 	bCommandState += GsmModemExecuteCommand("AT+CSCLK=0"); // no sleep
 	// Check simcard error
@@ -539,7 +540,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 		GsmActorPublishGsmStartedEvent("failure");
 		LogWrite("Gsm Modem start fail");
 		printf("start gsm Modem failed\n");
-		GsmSetRestart(20);
+		GsmSetRestart(5);
 		return FALSE;
 	}
 
@@ -562,17 +563,20 @@ static BOOL GsmModemRestart()
 	{
 		printf("can not power on gsm module\n");
 		LogWrite("Gsm Modem restart fail 1");
-		GsmSetRestart(20);
+		GsmSetRestart(5);
 		return FALSE;
 	}
 #endif
 	gsmModem->simStatus = TRUE;
+	gsmModem->status = GSM_MODEM_ACTIVE;
+	if (gsmModem->waitingCommand != NULL)
+		free(gsmModem->waitingCommand);
+	gsmModem->waitingCommand = NULL;
 	// start up commands
 	atSendCommand("AT", gsmModem->serialPort); //send this command to flush all data from buffer
 	sleep(1);
 	atSendCommand("ATE0", gsmModem->serialPort);
 	sleep(2);
-	bCommandState += GsmModemExecuteCommand("ATE0"); //turn of echo
 	bCommandState += GsmModemExecuteCommand("ATV1");
 	bCommandState += GsmModemExecuteCommand("AT+CSCLK=0"); // no sleep
 	// Check simcard error
@@ -589,7 +593,8 @@ static BOOL GsmModemRestart()
 		GsmActorPublishGsmStartedEvent("failure");
 		printf("start gsm Modem failed\n");
 		LogWrite("Gsm Modem restart fail 2");
-		GsmSetRestart(20);
+		LogWrite("reset count to restart again");
+		GsmSetRestart(5);
 		return FALSE;
 	}
 
