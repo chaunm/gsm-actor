@@ -73,7 +73,6 @@ VOID atHandleMessage(PBYTE pInData, BYTE nSize)
 		{
 			if((pInData[index] == 0x0D) && (pInData[index + 2] == 0x0A) && (pInData[index + 1] == 0x0D))
 			{
-				printf("in %d\n", index);
 				pData = pInData + index + 1;
 				nSize = nSize - index - 1;
 				break;

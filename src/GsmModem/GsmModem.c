@@ -533,7 +533,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 
 	sleep(1);
 	GsmModemExecuteCommand("AT+CMEE=1");
-	GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
+	//GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
 	GsmModemExecuteCommand("AT+CSCS?");
 	if (bCommandState != COMMAND_SUCCESS)
 	{
