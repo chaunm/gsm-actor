@@ -73,8 +73,8 @@ BYTE GsmModemExecuteCommand(char* command)
 	atSendCommand(command, gsmModem->serialPort);
 	GsmModemSetStatus(GSM_MODEM_WAITING, command);
 	timeout = 0;
-	char* eventMessage = malloc(50);
-	memset(eventMessage, 0, 50);
+	char* eventMessage = malloc(255);
+	memset(eventMessage, 0, 255);
 	while (gsmModem->status == GSM_MODEM_WAITING)
 	{
 		usleep(100000);
@@ -534,7 +534,7 @@ BOOL GsmModemInit(char* SerialPort, int ttl)
 	sleep(1);
 	GsmModemExecuteCommand("AT+CMEE=1");
 	GsmModemExecuteCommand("AT+CMGDA=\"DEL ALL\"");
-
+	GsmModemExecuteCommand("AT+CSCS?");
 	if (bCommandState != COMMAND_SUCCESS)
 	{
 		GsmActorPublishGsmStartedEvent("failure");

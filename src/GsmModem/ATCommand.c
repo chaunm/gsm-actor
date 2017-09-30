@@ -21,6 +21,8 @@ void* atHandleIncomingParam = NULL;
 
 static BOOL atValidateIncomingMessage(PBYTE pData, BYTE nSize)
 {
+	if (pData == NULL)
+		return FALSE;
 	if ((pData[0] != '\r') || (pData[1] != '\n')
 		|| (pData[nSize - 2] != '\r') || (pData[nSize - 1] != '\n'))
 		return FALSE;
@@ -63,15 +65,15 @@ VOID atProcessInputByte(BYTE nData, PWORD index, PBYTE pReceiveBuffer, PSERIAL p
 VOID atHandleMessage(PBYTE pInData, BYTE nSize)
 {
 	BYTE index;
-	PBYTE pData;
+	PBYTE pData = NULL;
 	if ((pInData[0] != '\r') && (pInData[1] != '\n' ))
 	{
-		printf("process message with echoes\n");
-		for(index = 1; index <  nSize; index++)
+		printf("process message with echoes with size %d\n", nSize);
+		for(index = 1; index <  nSize - 3; index++)
 		{
-			if((pInData[index] == 0x0A) && (pInData[index - 1] == 0x0D)
-				&& (pInData[index + 2] == 0x0A) && (pInData[index + 1] == 0x0D))
+			if((pInData[index] == 0x0D) && (pInData[index + 2] == 0x0A) && (pInData[index + 1] == 0x0D))
 			{
+				printf("in %d\n", index);
 				pData = pInData + index + 1;
 				nSize = nSize - index - 1;
 				break;
